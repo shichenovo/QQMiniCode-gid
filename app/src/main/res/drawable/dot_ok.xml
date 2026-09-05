@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 由 huojiujian 开源免费使用，二改请备注来源；地址 https://github.com/huojiujian2 -->
+
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="oval">
+    <solid android:color="@color/dot_ok"/>
+</shape>

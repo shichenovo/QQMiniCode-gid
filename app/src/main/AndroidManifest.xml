@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 由 huojiujian 开源免费使用，二改请备注来源；地址 https://github.com/huojiujian2 -->
+
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- VPN 抓包必须权限 -->
+    <uses-permission android:name="android.permission.INTERNET" />
+    <!-- Android 12+ 前台服务必须声明 -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <!-- dataSync 类型前台服务 -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
+    <!-- Android 14+ 精细化前台服务类型 -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
+    <!-- 通知权限（Android 13+） -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <!-- Android 13+ 附近设备权限：仅作兼容声明，不用于定位，必须声明 neverForLocation -->
+    <uses-permission
+        android:name="android.permission.NEARBY_WIFI_DEVICES"
+        android:usesPermissionFlags="neverForLocation" />
+
+    <!-- 查询已安装应用（用于检查 QQ 是否安装，非必须但有帮助） -->
+    <queries>
+        <package android:name="com.tencent.mobileqq" />
+    </queries>
+
+    <application
+        android:allowBackup="false"
+        android:icon="@drawable/ic_launcher"
+        android:label="@string/app_name"
+        android:supportsRtl="true"
+        android:usesCleartextTraffic="true"
+        android:theme="@style/Theme.QQMiniCodeCapture">
+
+        <!-- 主界面（启动入口）：抓包 code + 2.0 GID 抓包即解析 -->
+        <activity
+            android:name=".ui.MainActivity"
+            android:exported="true"
+            android:label="@string/app_name"
+            android:screenOrientation="portrait">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <!-- 核心：抓包 VPN 服务 -->
+        <!--
+            ★ android:process=":vpn"：tun2proxy 是 native 代码（Rust），停止时可能发生
+            native 层延迟崩溃（SIGSEGV）。若与 UI 同进程，一次崩溃会连界面进程一起杀掉
+            —— 这就是"点停止就闪退"的根因（Java 日志完整、无任何 CRASH 记录，进程却消失）。
+            独立进程后：native 崩溃只杀 :vpn 服务进程，主进程的 MainActivity 不受影响。
+            抓到的 code / 状态经 CodeBus 跨进程广播回 UI。
+        -->
+        <service
+            android:name=".vpn.CaptureVpnService"
+            android:process=":vpn"
+            android:exported="false"
+            android:permission="android.permission.BIND_VPN_SERVICE"
+            android:foregroundServiceType="dataSync|specialUse">
+            <intent-filter>
+                <action android:name="android.net.VpnService" />
+            </intent-filter>
+            <property
+                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="Local proxy for capturing QQ mini-program WebSocket handshake URL to extract a code query parameter. All traffic is forwarded without alteration." />
+        </service>
+
+    </application>
+
+</manifest>

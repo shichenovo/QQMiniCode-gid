@@ -1,0 +1,69 @@
+// 由 huojiujian 开源免费使用，二改请备注来源；地址 https://github.com/huojiujian2
+// app 模块 Gradle 配置文件
+plugins {
+    id 'com.android.application'
+}
+
+android {
+    namespace 'com.example.qqminicodecapture'
+    compileSdk 37  // Android 17
+
+    defaultConfig {
+        applicationId "com.example.qqminicodecapture"
+        minSdk 30      // Android 11
+        targetSdk 37   // Android 17
+        versionCode 200
+        versionName "2.0.0"
+    }
+
+    buildFeatures {
+        buildConfig true
+    }
+
+    buildTypes {
+        debug {
+            minifyEnabled false
+        }
+        release {
+            // R8 全量混淆 + 资源压缩（防静态反编译 / AI 辅助逆向）
+            minifyEnabled true
+            shrinkResources true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.debug
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+
+    // AGP 9.0 已移除 packagingOptions，改名为 packaging
+    packaging {
+        resources {
+            excludes += ['META-INF/AL2.0', 'META-INF/LGPL2.1', 'META-INF/versions/9/OSGI-INF/MANIFEST.MF']
+        }
+    }
+}
+
+kotlin {
+    compilerOptions {
+        jvmTarget = org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17
+    }
+}
+
+dependencies {
+    implementation 'androidx.core:core-ktx:1.13.1'
+    implementation 'androidx.appcompat:appcompat:1.7.0'
+    implementation 'com.google.android.material:material:1.12.0'
+    implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
+    implementation 'androidx.lifecycle:lifecycle-service:2.8.4'
+    implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.8.4'
+
+    // BouncyCastle: 用于本地生成 X.509 CA + 叶子证书（替代系统 KeyStore API 的限制）
+    implementation 'org.bouncycastle:bcprov-jdk18on:1.78.1'
+    implementation 'org.bouncycastle:bcpkix-jdk18on:1.78.1'
+
+    testImplementation 'junit:junit:4.13.2'
+    testImplementation 'org.json:json:20240303'
+}

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 由 huojiujian 开源免费使用，二改请备注来源；地址 https://github.com/huojiujian2 -->
+
+<resources>
+    <!-- 基于 Material 3 Light 的 NoActionBar 主题（QQ小程序Code抓包 主体） -->
+    <style name="Theme.QQMiniCodeCapture" parent="Theme.MaterialComponents.Light.NoActionBar">
+        <item name="colorPrimary">@color/purple_500</item>
+        <item name="colorPrimaryVariant">@color/purple_700</item>
+        <item name="colorOnPrimary">@color/white</item>
+        <item name="colorSecondary">@color/purple_500</item>
+        <item name="colorOnSecondary">@color/white</item>
+        <item name="android:statusBarColor">@color/bg_canvas</item>
+        <item name="android:navigationBarColor">@color/bg_canvas</item>
+        <item name="android:windowLightStatusBar">true</item>
+    </style>
+</resources>

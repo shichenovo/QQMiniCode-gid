@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 由 huojiujian 开源免费使用，二改请备注来源；地址 https://github.com/huojiujian2 -->
+
+<!--
+    应用图标（矢量，minSdk 30 原生支持 vector drawable）
+    青碧底 + 白色"流量被中间截获"符号：左右双向箭头 + 中间菱形捕获点
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="48dp"
+    android:height="48dp"
+    android:viewportWidth="48"
+    android:viewportHeight="48">
+
+    <!-- 背景 -->
+    <path
+        android:fillColor="#FF00C8C2"
+        android:pathData="M0,0h48v48h-48z" />
+
+    <!-- 左右双向箭头（描边） -->
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#FFFFFFFF"
+        android:strokeWidth="2.6"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:pathData="M6,24 L16,24 M12.5,20.5 L16,24 L12.5,27.5 M32,24 L42,24 M35.5,20.5 L32,24 L35.5,27.5" />
+
+    <!-- 中间捕获节点（实心菱形） -->
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M24,16.5 L31.5,24 L24,31.5 L16.5,24 Z" />
+</vector>

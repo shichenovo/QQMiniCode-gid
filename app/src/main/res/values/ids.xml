@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 由 huojiujian 开源免费使用，二改请备注来源；地址 https://github.com/huojiujian2 -->
+
+<!--
+    占位 ID：确保 main/R.java 在所有构建变体中都生成这些字段。
+    debug 版用 src/debug/res/layout/activity_main.xml 提供这些 View 的具体绑定；
+    release 版布局里没有这些 View，MainActivity 会取 null 安全跳过。
+-->
+<resources>
+    <item name="tvLog" type="id"/>
+    <item name="logScroll" type="id"/>
+    <item name="btnCopyLog" type="id"/>
+    <item name="btnClearLog" type="id"/>
+    <item name="logCard" type="id"/>
+
+    <!-- versionCard/btnCopyVersion/tvStatusLabel 在 release/debug 都有，保留占位一致性 -->
+    <item name="versionCard" type="id"/>
+    <item name="tvVersion" type="id"/>
+    <item name="btnCopyVersion" type="id"/>
+    <item name="tvStatusLabel" type="id"/>
+
+    <!-- 2.0 GID 引擎卡片 -->
+    <item name="gidCard" type="id"/>
+    <item name="tvGidStatus" type="id"/>
+    <item name="tvGidResult" type="id"/>
+    <item name="scrollGidResult" type="id"/>
+    <item name="btnFetchGid" type="id"/>
+    <item name="chkAutoGid" type="id"/>
+    <item name="btnCopyGids" type="id"/>
+    <item name="btnCopyGidsJson" type="id"/>
+</resources>

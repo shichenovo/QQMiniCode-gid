@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 由 huojiujian 开源免费使用，二改请备注来源；地址 https://github.com/huojiujian2 -->
+<resources>
+    <string name="app_name">QQ小程序抓包</string>
+    <string name="btn_start">启动抓包</string>
+    <string name="btn_stop">停止抓包</string>
+    <string name="code_hint">点击\"启动抓包\"开始</string>
+    <string name="code_card_title">已捕获的 code</string>
+    <string name="version_card_title">已捕获的版本号</string>
+    <string name="version_hint">尚未捕获</string>
+    <string name="btn_copy">复制</string>
+    <string name="btn_copy_version">复制版本号</string>
+    <string name="btn_download_cert">下载证书</string>
+    <string name="btn_check_cert">检测证书信任状态</string>
+    <string name="btn_copy_log">复制日志</string>
+    <string name="btn_clear_log">清空</string>
+    <string name="cert_checking">检测中...</string>
+    <string name="status_idle">未启动</string>
+    <string name="status_running">抓包中...</string>
+    <string name="copied">已复制到剪贴板</string>
+    <string name="copied_version">版本号已复制</string>
+    <string name="cert_saved">证书已保存到 Download/QQMiniCodeCapture-CA.pem</string>
+    <string name="cert_failed">保存证书失败</string>
+    <string name="vpn_prepare">需要授权 VPN 连接权限</string>
+    <string name="notification_channel_name">抓包服务</string>
+    <string name="notification_title">QQ小程序抓包</string>
+    <string name="notification_text">正在本地代理 QQ 流量</string>
+    <string name="install_cert_guide_title">请安装 CA 证书</string>
+    <string name="install_cert_guide_text">由于 Android 11+ 限制，应用无法自动安装证书。请按以下步骤手动安装：\n\n1. 点击下方\"打开系统设置\"\n2. 选择\"加密与凭据\" → \"安装证书\" → \"CA 证书\"\n3. 在 Download 文件夹中找到 QQMiniCodeCapture-CA.pem 并选择\n4. 完成安装后返回本应用</string>
+    <string name="btn_open_settings">打开系统设置</string>
+
+    <!-- 顶部状态文字（取代 CA 指纹） -->
+    <string name="state_idle">未启动</string>
+    <string name="state_ok">证书正常</string>
+    <string name="state_warn">证书异常</string>
+    <string name="state_err">错误</string>
+
+    <!-- v2.1 抓包即解析（好友 GID 卡片） -->
+    <string name="gid_card_title">好友 GID（抓包自动解析）</string>
+    <string name="gid_status_idle">启动抓包后打开一次 QQ 农场，即自动解析全部好友（无需 code、无需手动拉取）</string>
+    <string name="gid_status_busy">等待服务器下发好友数据…</string>
+    <string name="gid_status_ready">已解析好友（自动排除自身与内置小果），可直接复制</string>
+    <string name="gid_status_empty">暂无结果</string>
+    <string name="btn_copy_gids">复制 GID</string>
+    <string name="gid_copy_done">GID 已复制到剪贴板</string>
+    <string name="gid_empty_copy">暂无可复制的 GID</string>
+    <string name="gid_wait_hint">启动抓包 → 打开 QQ 农场 → 好友列表数据到达后自动显示</string>
+    <string name="gid_more_hint">… 仅显示前 %1$d 位，共 %2$d 位；点上方按钮取完整列表</string>
+
+    <!-- GitHub 开源项目来源 -->
+    <string name="btn_follow_github">关注 GitHub</string>
+    <string name="github_url">https://github.com/huojiujian2</string>
+
+</resources>

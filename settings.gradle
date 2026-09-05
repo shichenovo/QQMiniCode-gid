@@ -1,0 +1,22 @@
+// 由 huojiujian 开源免费使用，二改请备注来源；地址 https://github.com/huojiujian2
+// 仓库源说明：
+//  - google() / mavenCentral() / gradlePluginPortal() 指向国外，在无外网环境下不可达。
+//  - 构建时改用阿里云镜像（与原仓库内容一致）。
+//  - 你本地如有正常外网，可改回 google() / mavenCentral()。
+pluginManagement {
+    repositories {
+        maven { url 'https://maven.aliyun.com/repository/google' }
+        maven { url 'https://maven.aliyun.com/repository/central' }
+        maven { url 'https://maven.aliyun.com/repository/gradle-plugin' }
+    }
+}
+dependencyResolutionManagement {
+    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+    repositories {
+        maven { url 'https://maven.aliyun.com/repository/google' }
+        maven { url 'https://maven.aliyun.com/repository/central' }
+    }
+}
+
+rootProject.name = "QQMiniCodeCapture"
+include ':app'

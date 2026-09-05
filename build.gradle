@@ -1,0 +1,4 @@
+// 根工程 Gradle 配置文件
+plugins {
+    id 'com.android.application' version '9.2.0' apply false
+}

@@ -1,0 +1,343 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 由 huojiujian 开源免费使用，二改请备注来源；地址 https://github.com/huojiujian2 -->
+
+<!-- 整页可滚动容器：内容超出屏幕时(如好友 GID 列表)可下滑到启动按钮 -->
+<ScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/bg_canvas"
+    android:fillViewport="true"
+    android:scrollbars="none">
+
+<!--
+    正式版主界面（release）
+    - 顶部栏：app名称 + 状态点 + 状态文字（"未启动 / 证书正常 / 证书异常 / 错误"）
+    - 版本号卡片（含"复制版本号"按钮）
+    - code 卡片（含"复制"按钮）
+    - 启动/停止按钮（居中、较窄 - 按您调整后的样式）
+    - 复制 + 下载证书 并排两个按钮
+    - 检测证书信任状态（独立按钮）
+-->
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@color/bg_canvas"
+    android:paddingStart="20dp"
+    android:paddingEnd="20dp"
+    android:paddingTop="50dp"
+    android:paddingBottom="20dp"
+    tools:context=".ui.MainActivity">
+
+    <!-- 顶部栏 -->
+    <LinearLayout
+        android:id="@+id/topBar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/app_name"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:textColor="@color/text_primary"/>
+
+        <View
+            android:id="@+id/statusDot"
+            android:layout_width="12dp"
+            android:layout_height="12dp"
+            android:layout_marginEnd="6dp"
+            android:background="@drawable/dot_unknown"/>
+
+        <TextView
+            android:id="@+id/tvStatusLabel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/state_idle"
+            android:textSize="13sp"
+            android:textStyle="bold"
+            android:textColor="@color/state_idle"/>
+    </LinearLayout>
+
+    <!-- 版本号卡片 -->
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/versionCard"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        app:cardCornerRadius="16dp"
+        app:cardElevation="0dp"
+        app:strokeWidth="1dp"
+        app:strokeColor="@color/stroke_card"
+        app:cardBackgroundColor="@color/bg_card"
+        app:layout_constraintTop_toBottomOf="@id/topBar"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="20dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/version_card_title"
+                android:textSize="12sp"
+                android:textColor="@color/text_secondary"/>
+
+            <TextView
+                android:id="@+id/tvVersion"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:text="@string/version_hint"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:textColor="@color/text_tertiary"/>
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnCopyVersion"
+                style="@style/Widget.Material3.Button.TonalButton"
+                android:layout_width="wrap_content"
+                android:layout_height="36dp"
+                android:layout_marginTop="12dp"
+                android:text="@string/btn_copy_version"
+                android:textSize="13sp"
+                app:cornerRadius="10dp"
+                app:backgroundTint="@color/accent_tonal"
+                android:textColor="@color/accent"/>
+        </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
+
+    <!-- code 卡片 -->
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/codeCard"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        app:cardCornerRadius="16dp"
+        app:cardElevation="0dp"
+        app:strokeWidth="1dp"
+        app:strokeColor="@color/stroke_card"
+        app:cardBackgroundColor="@color/bg_card"
+        app:layout_constraintTop_toBottomOf="@id/versionCard"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="20dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/code_card_title"
+                android:textSize="12sp"
+                android:textColor="@color/text_secondary"/>
+
+            <EditText
+                android:id="@+id/etCode"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:hint="@string/code_hint"
+                android:enabled="false"
+                android:focusable="false"
+                android:longClickable="false"
+                android:inputType="none"
+                android:textIsSelectable="true"
+                android:textSize="22sp"
+                android:textStyle="bold"
+                android:textColor="@color/text_primary"
+                android:background="@null"/>
+        </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
+
+    <!-- 复制 + 下载证书 按钮行 -->
+
+
+    <LinearLayout
+        android:id="@+id/actionRow"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:orientation="horizontal"
+        android:weightSum="2"
+        app:layout_constraintTop_toBottomOf="@id/codeCard"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnCopy"
+            style="@style/Widget.Material3.Button.TonalButton"
+            android:layout_width="0dp"
+            android:layout_height="44dp"
+            android:layout_weight="1"
+            android:layout_marginEnd="8dp"
+            android:text="@string/btn_copy"
+            android:textSize="14sp"
+            android:textColor="@color/accent"
+            app:backgroundTint="@color/accent_tonal"
+            app:cornerRadius="12dp"/>
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnDownloadCert"
+            style="@style/Widget.Material3.Button.TonalButton"
+            android:layout_width="0dp"
+            android:layout_height="44dp"
+            android:layout_weight="1"
+            android:layout_marginStart="8dp"
+            android:text="@string/btn_download_cert"
+            android:textSize="14sp"
+            android:textColor="@color/accent"
+            app:backgroundTint="@color/accent_tonal"
+            app:cornerRadius="12dp"/>
+    </LinearLayout>
+    <!-- 启动/停止 + 关注 GitHub 行 -->
+    <LinearLayout
+        android:id="@+id/startRow"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="14dp"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        app:layout_constraintTop_toBottomOf="@id/actionRow"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnStartCapture"
+            style="@style/Widget.Material3.Button"
+            android:layout_width="0dp"
+            android:layout_height="54dp"
+            android:layout_weight="1"
+            android:layout_marginEnd="8dp"
+            android:text="@string/btn_start"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            app:cornerRadius="16dp"
+            app:backgroundTint="@color/accent"/>
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnGithub"
+            style="@style/Widget.Material3.Button.TonalButton"
+            android:layout_width="wrap_content"
+            android:layout_height="54dp"
+            android:minWidth="0dp"
+            android:paddingStart="14dp"
+            android:paddingEnd="14dp"
+            android:text="@string/btn_follow_github"
+            android:textSize="13sp"
+            android:textStyle="bold"
+            android:textColor="@color/accent"
+            app:cornerRadius="16dp"
+            app:backgroundTint="@color/accent_tonal"/>
+    </LinearLayout>
+
+
+
+<!-- 检测证书信任状态 -->
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnCheckCert"
+        style="@style/Widget.Material3.Button"
+        android:layout_width="match_parent"
+        android:layout_height="36dp"
+        android:layout_marginTop="14dp"
+        android:text="@string/btn_check_cert"
+        android:textSize="13sp"
+        app:cornerRadius="12dp"
+        app:backgroundTint="@color/check_cert_bg"
+        android:textColor="@color/accent"
+        app:layout_constraintTop_toBottomOf="@id/startRow"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
+
+
+    <!-- 好友 GID 卡片（2.0 引擎） -->
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/gidCard"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        app:cardCornerRadius="16dp"
+        app:cardElevation="0dp"
+        app:strokeWidth="1dp"
+        app:strokeColor="@color/stroke_card"
+        app:cardBackgroundColor="@color/bg_card"
+        app:layout_constraintTop_toBottomOf="@id/btnCheckCert"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="16dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/gid_card_title"
+                android:textSize="12sp"
+                android:textColor="@color/text_secondary"/>
+
+            <TextView
+                android:id="@+id/tvGidStatus"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:text="@string/gid_status_idle"
+                android:textSize="12sp"
+                android:textColor="@color/text_tertiary"/>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnCopyGidsJson"
+                    style="@style/Widget.Material3.Button.TonalButton"
+                    android:layout_width="match_parent"
+                    android:layout_height="40dp"
+                    android:enabled="false"
+                    android:text="@string/btn_copy_gids"
+                    android:textSize="12sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/accent"
+                    app:cornerRadius="10dp"
+                    app:backgroundTint="@color/accent_tonal"/>
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/tvGidResult"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:textIsSelectable="true"
+                android:textSize="12sp"
+                android:fontFamily="monospace"
+                android:textColor="@color/text_primary"/>
+        </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
+
+</androidx.constraintlayout.widget.ConstraintLayout>
+</ScrollView>
