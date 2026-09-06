@@ -47,8 +47,25 @@
     <string name="gid_wait_hint">启动抓包 → 打开 QQ 农场 → 好友列表数据到达后自动显示</string>
     <string name="gid_more_hint">… 仅显示前 %1$d 位，共 %2$d 位；点上方按钮取完整列表</string>
 
+    <!-- v2.3 等级过滤 -->
+    <string name="lv_filter_label">过滤等级 ≥</string>
+    <string name="lv_filter_hint">0</string>
+    <string name="lv_filter_tip">Lv（0/留空 = 全部，复制与同步均按此过滤）</string>
+
     <!-- GitHub 开源项目来源 -->
     <string name="btn_follow_github">关注 GitHub</string>
     <string name="github_url">https://github.com/huojiujian2</string>
+
+    <!-- v2.2 Bot 面板同步 -->
+    <string name="panel_sync_title">同步到 Bot 面板（已知好友 GID）</string>
+    <string name="panel_url_hint">面板地址，如 http://103.117.137.115:3010</string>
+    <string name="panel_accid_hint">账号ID</string>
+    <string name="panel_user_hint">管理员账号</string>
+    <string name="panel_pass_hint">密码</string>
+    <string name="panel_auto_sync">解析后自动同步</string>
+    <string name="btn_sync_panel">同步 GID 到面板</string>
+    <string name="panel_sync_busy">正在同步到面板…</string>
+    <string name="panel_sync_done">已同步到面板</string>
+    <string name="panel_sync_failed">同步失败，请检查配置</string>
 
 </resources>

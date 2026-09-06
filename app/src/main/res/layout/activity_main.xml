@@ -306,6 +306,43 @@
                 android:textSize="12sp"
                 android:textColor="@color/text_tertiary"/>
 
+            <!-- v2.3 等级过滤：只保留 Lv≥阈值的真人好友（0/留空=不过滤） -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/lv_filter_label"
+                    android:textSize="12sp"
+                    android:textColor="@color/text_secondary"/>
+
+                <EditText
+                    android:id="@+id/etLevelFilter"
+                    android:layout_width="56dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="6dp"
+                    android:hint="@string/lv_filter_hint"
+                    android:inputType="number"
+                    android:maxLines="1"
+                    android:gravity="center"
+                    android:textSize="13sp"
+                    android:textColor="@color/text_primary"
+                    android:textColorHint="@color/text_tertiary"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="6dp"
+                    android:text="@string/lv_filter_tip"
+                    android:textSize="11sp"
+                    android:textColor="@color/text_tertiary"/>
+            </LinearLayout>
+
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -332,10 +369,116 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="6dp"
-                android:textIsSelectable="true"
+                android:maxHeight="240dp"
+                android:scrollbars="vertical"
                 android:textSize="12sp"
                 android:fontFamily="monospace"
                 android:textColor="@color/text_primary"/>
+
+            <!-- v2.2 Bot 面板同步：把解析出的好友 GID 增量合并到面板"已知好友 GID" -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="14dp"
+                android:text="@string/panel_sync_title"
+                android:textSize="12sp"
+                android:textColor="@color/text_secondary"/>
+
+            <EditText
+                android:id="@+id/etPanelUrl"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:hint="@string/panel_url_hint"
+                android:inputType="textUri"
+                android:maxLines="1"
+                android:textSize="13sp"
+                android:textColor="@color/text_primary"
+                android:textColorHint="@color/text_tertiary"/>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:orientation="horizontal">
+
+                <EditText
+                    android:id="@+id/etPanelAccId"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginEnd="4dp"
+                    android:hint="@string/panel_accid_hint"
+                    android:inputType="number"
+                    android:maxLines="1"
+                    android:textSize="13sp"
+                    android:textColor="@color/text_primary"
+                    android:textColorHint="@color/text_tertiary"/>
+
+                <EditText
+                    android:id="@+id/etPanelUser"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1.4"
+                    android:layout_marginEnd="4dp"
+                    android:hint="@string/panel_user_hint"
+                    android:inputType="text"
+                    android:maxLines="1"
+                    android:textSize="13sp"
+                    android:textColor="@color/text_primary"
+                    android:textColorHint="@color/text_tertiary"/>
+
+                <EditText
+                    android:id="@+id/etPanelPass"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1.4"
+                    android:hint="@string/panel_pass_hint"
+                    android:inputType="textPassword"
+                    android:maxLines="1"
+                    android:textSize="13sp"
+                    android:textColor="@color/text_primary"
+                    android:textColorHint="@color/text_tertiary"/>
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
+
+                <CheckBox
+                    android:id="@+id/cbAutoSync"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/panel_auto_sync"
+                    android:textSize="13sp"
+                    android:textColor="@color/text_primary"/>
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnSyncPanel"
+                    style="@style/Widget.Material3.Button.TonalButton"
+                    android:layout_width="0dp"
+                    android:layout_height="40dp"
+                    android:layout_weight="1"
+                    android:layout_marginStart="8dp"
+                    android:text="@string/btn_sync_panel"
+                    android:textSize="12sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/accent"
+                    app:cornerRadius="10dp"
+                    app:backgroundTint="@color/accent_tonal"/>
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/tvPanelResult"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:textIsSelectable="true"
+                android:textSize="11sp"
+                android:textColor="@color/text_tertiary"/>
         </LinearLayout>
     </com.google.android.material.card.MaterialCardView>
 

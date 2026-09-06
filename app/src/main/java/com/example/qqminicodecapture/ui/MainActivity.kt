@@ -20,6 +20,7 @@ import android.os.Looper
 import android.util.Log
 import android.view.View
 import android.widget.Button
+import android.widget.CheckBox
 import android.widget.EditText
 import android.widget.ScrollView
 import android.widget.TextView
@@ -36,6 +37,7 @@ import com.example.qqminicodecapture.util.CertExporter
 import com.example.qqminicodecapture.util.CertInstallerGuide
 import com.example.qqminicodecapture.util.CodeBus
 import com.example.qqminicodecapture.util.FileLog
+import com.example.qqminicodecapture.util.PanelSyncer
 import com.example.qqminicodecapture.vpn.CaptureVpnService
 import org.json.JSONArray
 import org.json.JSONObject
@@ -82,9 +84,23 @@ class MainActivity : AppCompatActivity() {
     private lateinit var tvGidStatus: TextView
     private lateinit var tvGidResult: TextView
     private lateinit var btnCopyGids: Button  // 唯一复制按钮：内容为 JSON 数组（可直接导入服务器）
+    private lateinit var etLevelFilter: EditText // 等级过滤阈值（0=不过滤）
     private var lastActionableGids: List<Long> = emptyList()
     private var gidRawJson: String = ""
     private var mergedFriends: Map<Long, JSONObject> = emptyMap()
+    private var lastSelfGid: Long = 0L
+
+    // ---- v2.2 Bot 面板同步 ----
+    private lateinit var etPanelUrl: EditText
+    private lateinit var etPanelAccId: EditText
+    private lateinit var etPanelUser: EditText
+    private lateinit var etPanelPass: EditText
+    private lateinit var cbAutoSync: CheckBox
+    private lateinit var btnSyncPanel: Button
+    private lateinit var tvPanelResult: TextView
+    private var syncingNow: Boolean = false
+    private var lastAutoSyncAt: Long = 0L
+    private val autoSyncMinIntervalMs = 15_000L
 
     // 仅调试版存在的控件
     private var tvLog: TextView? = null
@@ -178,9 +194,35 @@ class MainActivity : AppCompatActivity() {
         tvGidStatus     = findViewById(R.id.tvGidStatus)
         tvGidResult     = findViewById(R.id.tvGidResult)
         btnCopyGids      = findViewById(R.id.btnCopyGidsJson)
+        etLevelFilter    = findViewById(R.id.etLevelFilter)
         tvGidStatus.text = getString(R.string.gid_status_idle)
         tvGidResult.text = ""
+        // 结果区限高可滚动，方便查看全部好友（不依赖外层 ScrollView，避免嵌套滚动冲突）
+        tvGidResult.movementMethod = android.text.method.ScrollingMovementMethod()
         btnCopyGids.isEnabled = false
+        // 等级过滤阈值变化 → 立即按最新阈值重新过滤已解析结果
+        etLevelFilter.addTextChangedListener(object : android.text.TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, a: Int, b: Int, c: Int) {}
+            override fun onTextChanged(s: CharSequence?, a: Int, b: Int, c: Int) {}
+            override fun afterTextChanged(s: android.text.Editable?) {
+                if (mergedFriends.isNotEmpty()) refreshGidUi()
+            }
+        })
+
+        // v2.2 Bot 面板同步控件（回填上次保存的配置）
+        etPanelUrl    = findViewById(R.id.etPanelUrl)
+        etPanelAccId  = findViewById(R.id.etPanelAccId)
+        etPanelUser   = findViewById(R.id.etPanelUser)
+        etPanelPass   = findViewById(R.id.etPanelPass)
+        cbAutoSync    = findViewById(R.id.cbAutoSync)
+        btnSyncPanel  = findViewById(R.id.btnSyncPanel)
+        tvPanelResult = findViewById(R.id.tvPanelResult)
+        val panelCfg = PanelSyncer.loadConfig(this)
+        etPanelUrl.setText(panelCfg.url)
+        etPanelAccId.setText(panelCfg.accountId)
+        etPanelUser.setText(panelCfg.username)
+        etPanelPass.setText(panelCfg.password)
+        cbAutoSync.isChecked = panelCfg.autoSync
 
         if (BuildConfig.DEBUG) {
             tvLog       = findViewById(R.id.tvLog)
@@ -225,6 +267,10 @@ class MainActivity : AppCompatActivity() {
 
         // v2.1 抓包即解析：复制 GID / 复制 JSON 数组
         btnCopyGids.setOnClickListener { copyActionableGidsJson() }
+
+        // v2.2 Bot 面板同步：手动同步按钮 + 自动同步开关
+        btnSyncPanel.setOnClickListener { savePanelConfig(); syncToPanel(manual = true) }
+        cbAutoSync.setOnCheckedChangeListener { _, _ -> savePanelConfig() }
 
         // ★ 跨进程事件通道：CaptureVpnService 跑在 ":vpn" 独立进程，
         // 抓到的 code/状态/错误/好友数据经广播回到主进程，由 receiver 驱动统一的事件方法。
@@ -272,13 +318,11 @@ class MainActivity : AppCompatActivity() {
 
     // ---------------- v2.1 抓包即解析：好友 GID ----------------
 
-    /** 卡片预览最多显示的行数（GID 卡在页面底部，展示少量代表即可，完整列表走复制） */
-    private val gidPreviewLimit = 8
-
     /** 服务器→客户端方向解析到的一批好友（可能来自 SyncAll / GetAll / GetGameFriends） */
     private fun onFriendsParsed(selfGid: Long, friendsJson: String) {
         try {
             AppLogger.i(TAG, "收到好友数据 ${friendsJson.length}B")
+            lastSelfGid = selfGid
             val arr = try { JSONArray(friendsJson) } catch (_: Throwable) { return }
             val byGid = LinkedHashMap<Long, JSONObject>()
             for (i in 0 until arr.length()) {
@@ -294,49 +338,79 @@ class MainActivity : AppCompatActivity() {
             val merged = LinkedHashMap<Long, JSONObject>()
             for ((gid, o) in mergedFriends) merged[gid] = o
             for ((gid, o) in byGid) merged[gid] = o
-
-            // 排除自身（Login 响应动态提供）与内置 NPC（小果 10001），剩余为可操作真人。
-            // 注意：不同账号自身 gid 不同，只能依赖嗅探器从 Login 帧动态取出的 selfGid，不可硬编码。
-            val actionable = merged.values.filter { o ->
-                val g = o.optLong("gid")
-                g != selfGid && g != 10001L
-            }.sortedBy { it.optLong("gid") }
-
-            val gids = actionable.map { it.optLong("gid") }
-            lastActionableGids = gids
-            gidRawJson = JSONArray(merged.values.toList()).toString()
             mergedFriends = merged
+            gidRawJson = JSONArray(merged.values.toList()).toString()
 
-            val sb = StringBuilder()
-            sb.append("已解析 ").append(merged.size)
-                .append(" 位好友，可操作 ").append(gids.size).append(" 位")
-            if (selfGid > 0) sb.append("（已排除自身 gid=").append(selfGid).append("）")
-            sb.append('\n')
-
-            // 列表只显示前 gidPreviewLimit 行，避免卡片挤爆
-            if (actionable.isNotEmpty()) {
-                val show = minOf(gidPreviewLimit, actionable.size)
-                for (i in 0 until show) {
-                    val f = actionable[i]
-                    val name = f.optString("name", "")
-                    val lv = f.optLong("level")
-                    sb.append(f.optLong("gid"))
-                    if (name.isNotBlank()) sb.append("  ").append(name)
-                    if (lv > 0) sb.append("  Lv").append(lv)
-                    sb.append('\n')
-                }
-                if (actionable.size > show) {
-                    sb.append(getString(R.string.gid_more_hint, show, actionable.size))
-                }
-            } else {
-                sb.append("（暂无真人好友，可到 QQ 农场加几个好友后再试）")
-            }
-            tvGidStatus.text = getString(R.string.gid_status_ready)
-            tvGidResult.text = sb.toString()
-            btnCopyGids.isEnabled = gids.isNotEmpty()
+            refreshGidUi()
         } catch (t: Throwable) {
             AppLogger.w(TAG, "解析好友数据异常: ${t.message}")
         }
+    }
+
+    /** 当前"等级过滤"阈值：≥1 生效，0/空 = 不过滤 */
+    private fun levelThreshold(): Long =
+        (etLevelFilter.text?.toString()?.toLongOrNull() ?: 0L).coerceAtLeast(0L)
+
+    /** 依据最新 mergedFriends + 等级过滤阈值，刷新可操作 GID 与界面 */
+    private fun refreshGidUi() {
+        val merged = mergedFriends
+        if (merged.isEmpty()) return
+        val threshold = levelThreshold()
+
+        // 排除自身（Login 响应动态提供）与内置 NPC（小果 10001）。
+        // 注意：不同账号自身 gid 不同，只能依赖嗅探器从 Login 帧动态取出的 lastSelfGid，不可硬编码。
+        val human = merged.values.filter { o ->
+            val g = o.optLong("gid")
+            g != lastSelfGid && g != 10001L
+        }
+        // 等级过滤：只保留 Lv ≥ 阈值的好友；等级未知(≤0)不过滤，避免误杀信息不全的老好友
+        val actionable = if (threshold > 0) {
+            human.filter { o ->
+                val lv = o.optLong("level")
+                lv <= 0L || lv >= threshold
+            }
+        } else {
+            human
+        }.sortedBy { it.optLong("gid") }
+
+        val lvFilteredOut = if (threshold > 0) {
+            human.count { o ->
+                val lv = o.optLong("level")
+                lv in 1 until threshold
+            }
+        } else 0
+
+        val gids = actionable.map { it.optLong("gid") }
+        lastActionableGids = gids
+
+        val sb = StringBuilder()
+        sb.append("已解析 ").append(merged.size)
+            .append(" 位好友，可操作 ").append(gids.size).append(" 位")
+        if (lastSelfGid > 0) sb.append("（已排除自身 gid=").append(lastSelfGid).append("）")
+        if (lvFilteredOut > 0) sb.append("（已过滤 ").append(lvFilteredOut).append(" 位 Lv<").append(threshold).append("）")
+        sb.append('\n')
+
+        // 全量显示全部可操作好友（结果区限高可上下滚动，不再截断）
+        if (actionable.isNotEmpty()) {
+            for (f in actionable) {
+                val name = f.optString("name", "")
+                val lv = f.optLong("level")
+                sb.append(f.optLong("gid"))
+                if (name.isNotBlank()) sb.append("  ").append(name)
+                if (lv > 0) sb.append("  Lv").append(lv)
+                sb.append('\n')
+            }
+        } else {
+            sb.append(if (threshold > 0)
+                "（过滤后无好友，试试调低等级阈值）"
+            else
+                "（暂无真人好友，可到 QQ 农场加几个好友后再试）")
+        }
+        tvGidStatus.text = getString(R.string.gid_status_ready)
+        tvGidResult.text = sb.toString()
+        btnCopyGids.isEnabled = gids.isNotEmpty()
+        // v2.2：开启自动同步时，解析出可操作好友即推送到 Bot 面板（内部有节流）
+        if (gids.isNotEmpty()) maybeAutoSync()
     }
 
     /**
@@ -356,6 +430,70 @@ class MainActivity : AppCompatActivity() {
         cm.setPrimaryClip(ClipData.newPlainText("qq_gids", text))
         AppLogger.i(TAG, "复制 GID(${lastActionableGids.size} 个)，长度=${text.length}")
         Toast.makeText(this, R.string.gid_copy_done, Toast.LENGTH_SHORT).show()
+    }
+
+    // ---------------- v2.2 Bot 面板好友 GID 同步 ----------------
+
+    /** 保存面板配置（地址 / 账号 / 密码 / 自动同步开关） */
+    private fun savePanelConfig() {
+        PanelSyncer.saveConfig(
+            this,
+            PanelSyncer.Config(
+                url = etPanelUrl.text?.toString() ?: "",
+                accountId = etPanelAccId.text?.toString() ?: "1",
+                username = etPanelUser.text?.toString() ?: "admin",
+                password = etPanelPass.text?.toString() ?: "",
+                autoSync = cbAutoSync.isChecked,
+            )
+        )
+    }
+
+    /**
+     * 把当前可操作 GID 同步到 Bot 面板（后台线程执行，UI 线程回显结果）。
+     * @param manual true=按钮手动同步（无条件执行）；false=解析后自动同步（带节流）
+     */
+    private fun syncToPanel(manual: Boolean) {
+        if (syncingNow) {
+            if (manual) Toast.makeText(this, "正在同步中，请稍候…", Toast.LENGTH_SHORT).show()
+            return
+        }
+        val gids = lastActionableGids
+        if (gids.isEmpty()) {
+            if (manual) Toast.makeText(this, R.string.gid_empty_copy, Toast.LENGTH_SHORT).show()
+            return
+        }
+        if (!manual) {
+            val now = System.currentTimeMillis()
+            if (now - lastAutoSyncAt < autoSyncMinIntervalMs) return
+            lastAutoSyncAt = now
+        }
+        savePanelConfig()
+        syncingNow = true
+        btnSyncPanel.isEnabled = false
+        tvPanelResult.text = getString(R.string.panel_sync_busy)
+        Thread {
+            val result = PanelSyncer.sync(gids, applicationContext)
+            runOnUiThread {
+                syncingNow = false
+                btnSyncPanel.isEnabled = true
+                tvPanelResult.text = (if (result.ok) "✓ " else "✗ ") + result.message
+                if (result.ok) {
+                    AppLogger.i(TAG, "面板同步成功: ${result.message}")
+                } else {
+                    AppLogger.w(TAG, "面板同步失败: ${result.message}")
+                }
+                Toast.makeText(
+                    this,
+                    if (result.ok) R.string.panel_sync_done else R.string.panel_sync_failed,
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
+        }.start()
+    }
+
+    /** 解析到新好友后由 onFriendsParsed 调用的自动同步入口 */
+    private fun maybeAutoSync() {
+        if (cbAutoSync.isChecked) syncToPanel(manual = false)
     }
 
     private fun onVersionEvent(ver: String) {
